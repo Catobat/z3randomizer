@@ -96,13 +96,12 @@ OWShuffle:
     .nextTransition
     pha
         jsr OWSearchTransition
-        lda $140 : bne .newDestination
+        bcs .newDestination
     pla : dec : bne .nextTransition : bra .noTransition
 
     .newDestination
     pla
     sep #$30
-    stz $140
     plx : lda $8a
     bra .return
 
@@ -152,11 +151,11 @@ OWSearchTransition:
             sep #$20 : lda #OWWestEdges>>16 : phb : pha : plb : ldx #OWWestEdges : jsr OWNewDestination : plb ;x = address of table
 
     .matchfound
-    plx : pla : lda #$0001 : sta $140 : pha : phx
-    txa : !add #$0010 : tax : rts
+    plx : pla : lda #$0001 : pha : phx
+    txa : !add #$0010 : tax : sec : rts
 
     .exitloop
-    txa : !add #$0018 : tax : rts
+    txa : !add #$0018 : tax : clc : rts
 }
 OWNewDestination:
 {
