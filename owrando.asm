@@ -87,6 +87,7 @@ OWShuffle:
     
     inx : lda.l OWEdgeOffsets,x ;record id of first transition in table
     ;multiply ^ by 26, 26bytes per record
+    stz $211c ;ensure the next write to $211b counts as the first write
     sta $211b : stz $211b : lda #26 : sta $211c : pla ;a = number of trans
     ldx $2134 ;x = offset to first record
     rep #$20
@@ -212,7 +213,7 @@ OWNewDestination:
     lda OWOppSlotOffset,y : !add $04 : asl : and #$7f : sta $700
     sep #$20
 
-    lda $05 : sta $8a : and #$40 : sta.l $7ef3ca
+    lda $05 : sta $8a ;: and #$40 : sta.l $7ef3ca ;removed setting DW flag
     rep #$30
 
     rts
