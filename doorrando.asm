@@ -37,6 +37,7 @@ incsrc edges.asm
 incsrc math.asm
 incsrc hudadditions.asm
 incsrc dr_lobby.asm
+incsrc connecteddungeons.asm
 warnpc $279C00
 
 incsrc doortables.asm

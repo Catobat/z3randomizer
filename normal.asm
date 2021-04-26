@@ -97,7 +97,7 @@ LoadRoomHorz:
 {
     phb : phk : plb
 	sty $06 : sta $07 : lda $a0 : pha ; Store normal room on stack
-	lda $07 : jsr LookupNewRoom ; New room is in A, Room Data is in $00-$01
+	lda $07 : jsr LookupNewRoom ; Room Data is in $00-$01
 	lda $00 : cmp #$03 : bne .gtg
 	jsr HorzEdge : pla : bcs .end
 	sta $a0 : bra .end ; Restore normal room, abort (straight staircases and open edges can get in this routine)
@@ -105,6 +105,9 @@ LoadRoomHorz:
 	.gtg ;Good to Go!
 	pla ; Throw away normal room (don't fill up the stack)
 	lda $a0 : and.b #$0F : asl a : !sub $23 : !add $06 : sta $02
+    lda $03 : and #$0f : beq +
+        asl : jsr ChangeDungeon
+    +
 	ldy #$00 : jsr ShiftVariablesMainDir
 
     lda $01 : and #$80 : beq .normal
@@ -131,13 +134,16 @@ LoadRoomVert:
 {
     phb : phk : plb
 	sty $06 : sta $07 : lda $a0 : pha ; Store normal room on stack
-	lda $07 : jsr LookupNewRoom ; New room is in A, Room Data is in $00-$01
+	lda $07 : jsr LookupNewRoom ; Room Data is in $00-$01
 	lda $00 : cmp #$03 : bne .gtg
 	jsr VertEdge : pla : bcs .end
 	sta $a0 : bra .end ; Restore normal room, abort (straight staircases and open edges can get in this routine)
 	.gtg ;Good to Go!
 	pla ; Throw away normal room (don't fill up the stack)
 	lda $a0 : and.b #$F0 : lsr #3 : !sub $21 : !add $06 : sta $02
+    lda $03 : and #$0f : beq +
+        asl : jsr ChangeDungeon
+    +
 
 	lda $01 : and #$80 : beq .notEdge
 	    ldy #$01 : jsr ShiftVariablesMainDir
@@ -169,11 +175,14 @@ LookupNewRoom: ; expects data offset to be in A
 	sta $00 ; offset in 00
 	lda $a2 : tax ; probably okay loading $a3 in the high byte
 	lda.w DoorOffset,x : and #$00FF ;we only want the low byte
-	asl #3 : sta $02 : !add $02 : !add $02 ;multiply by 24 (data size)
-	!add $00 ; should now have the offset of the address I want to load
+	asl #3 : sta $02 : asl : adc $02 ;multiply by 24 (data size)
+	adc $00 ; should now have the offset of the address I want to load
 	tax : lda.w DoorTable,x : sta $00
 	and #$00FF : sta $a0 ; assign new room
+    txa : lsr : tax
+    lda.w DoorDungeonTable,x
 	sep #$30
+    sta $03
 	rts
 }
 
